@@ -3,6 +3,7 @@ const destination = document.querySelector('.destination-form')
 const resultsOfStart = document.querySelector('.origins');
 const resultsOfDestination = document.querySelector('.destinations');
 const searchTripButton = document.querySelector('.button-container');
+const tripEle = document.querySelector('.my-trip');
 let startGeo = [];
 let destinationGeo = [];
 const lockInWinnipeg = '-97.325875, 49.766204, -96.953987, 49.99275';
@@ -15,7 +16,7 @@ function displayStartingLocation(query) {
       if (resp.ok) {
         return resp.json();
       } else {
-        throw new Error ('No results found');
+        throw new Error('No results found');
       }
     })
     .then(searchResults => {
@@ -31,7 +32,7 @@ function displayDestination(query) {
       if (resp.ok) {
         return resp.json();
       } else {
-        throw new Error ('No results found');
+        throw new Error('No results found');
       }
     })
     .then(searchResults => {
@@ -43,7 +44,7 @@ function displayDestination(query) {
 
 function displayResults(array) {
   resultsOfStart.innerHTML = "";
-  for(let location of array) {
+  for (let location of array) {
     resultsOfStart.insertAdjacentHTML('beforeend', `
       <li data-long=${location.center[0]} data-lat=${location.center[1]} class="">
         <div class="name">${location.place_name.split(',')[0]}</div>
@@ -55,7 +56,7 @@ function displayResults(array) {
 
 function resultsOfDestinations(array) {
   resultsOfDestination.innerHTML = "";
-  for(let location of array) {
+  for (let location of array) {
     resultsOfDestination.insertAdjacentHTML('beforeend', `
       <li data-long=${location.center[0]} data-lat=${location.center[1]} class="">
         <div class="name">${location.place_name.split(',')[0]}</div>
@@ -65,23 +66,23 @@ function resultsOfDestinations(array) {
   }
 }
 
-startingLocation.addEventListener('submit', function(e) {
+startingLocation.addEventListener('submit', function (e) {
   e.preventDefault();
   const input = e.target.querySelector('input');
   displayStartingLocation(input.value);
   input.value = "";
 });
 
-destination.addEventListener('submit', function(e) {
+destination.addEventListener('submit', function (e) {
   e.preventDefault();
   const input = e.target.querySelector('input');
   displayDestination(input.value);
   input.value = "";
 });
 
-resultsOfStart.addEventListener('click', function(e) {
+resultsOfStart.addEventListener('click', function (e) {
   const rightClick = e.target.closest('li');
-  for(let child of resultsOfStart.children) {
+  for (let child of resultsOfStart.children) {
     child.className = "";
   }
   rightClick.className = "selected";
@@ -91,9 +92,9 @@ resultsOfStart.addEventListener('click', function(e) {
   return startGeo;
 });
 
-resultsOfDestination.addEventListener('click', function(e) {
+resultsOfDestination.addEventListener('click', function (e) {
   const rightClick = e.target.closest('li');
-  for(let child of resultsOfDestination.children) {
+  for (let child of resultsOfDestination.children) {
     child.className = "";
   }
   rightClick.className = "selected";
@@ -103,24 +104,62 @@ resultsOfDestination.addEventListener('click', function(e) {
   return destinationGeo;
 });
 
-searchTripButton.addEventListener('click', function(e) {
-  if(e.target.className === "plan-trip") {
-    if(startGeo[0] || startGeo[1] || destinationGeo[0] || destinationGeo[1] !== "") {
-      planTrip(startGeo[0], startGeo[1], destinationGeo[0], destinationGeo[1]);
-    }
+searchTripButton.addEventListener('click', function (e) {
+  if (e.target.className === "plan-trip") {
+    planTrip(startGeo[0], startGeo[1], destinationGeo[0], destinationGeo[1]);
   }
 })
 
 function planTrip(startLat, startLong, endLat, endLong) {
   fetch(`https://api.winnipegtransit.com/v3/trip-planner.json?api-key=${myWinnipegTransitAPI}&origin=geo/${startLat},${startLong}&destination=geo/${endLat},${endLong}`)
-  .then(resp => {
-    if (resp.ok) {
-      return resp.json();
-    } else {
-      throw new Error ('No trips found');
-    }
+    .then(resp => {
+      if (resp.ok) {
+        return resp.json();
+      } else {
+        throw new Error('No trips found');
+      }
+    })
+    .then(trip => {
+      console.log(trip.plans[0].segments);
+    });
+}
+
+function createTrip(arrayOfPlan) {
+  Promise.all(arrayOfPlan).then(result => {
+    listOfPlan(result.type);
   })
-  .then(trip => {
-    console.log(trip);
-  });
+}
+
+function listOfPlan(whatToDo) {
+  let html = ""
+  if(whatToDo === "walk") {
+    html += `
+    <li>
+       <i class="fas fa-walking" aria-hidden="true"></i>Walk for ${timeCounter(whatToDo.times.start, whatToDo.times.end)} minutes
+      to stop #${whatToDo.to.stop.key} - ${whatToDo.to.stop.name}
+    </li>
+    `
+  } else if (whatToDo === "ride") {
+    html += `
+    <li>
+      <i class="fas fa-bus" aria-hidden="true"></i>Ride the ${whatToDo.route.name} for ${timeCounter(whatToDo.times.start, whatToDo.times.end)} minutes.
+    </li>
+    `
+  } else if (whatToDo === "transfer") {
+    html += `
+      <li>
+        <i class="fas fa-ticket-alt" aria-hidden="true"></i>Transfer from stop
+        #${whatToDo.from.stop.key} - ${whatToDo.from.stop.name}to stop #${whatToDo.to.stop.key} - ${whatToDo.to.stop.name}
+      </li>
+    `
+  }
+
+  return html;
+}
+
+function timeCounter(start, end) {
+  let timeStart = new Date(start).getMinutes;
+  let timeEnd = new Date(end).getMinutes;
+
+  return timeEnd - timeStart;
 }
