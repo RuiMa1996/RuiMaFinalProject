@@ -3,7 +3,10 @@ const destination = document.querySelector('.destination-form')
 const resultsOfStart = document.querySelector('.origins');
 const resultsOfDestination = document.querySelector('.destinations');
 const searchTripButton = document.querySelector('.button-container');
+let startGeo = [];
+let destinationGeo = [];
 const lockInWinnipeg = '-97.325875, 49.766204, -96.953987, 49.99275';
+const myWinnipegTransitAPI = "2dXx20LqMATZ1L2vsXr";
 mapboxgl.accessToken = 'pk.eyJ1IjoiZHJzbGltcmVhcGVycnVpIiwiYSI6ImNrYTVpazZ6YzAwajYzZ21nNHlmY2VtMDkifQ.6XvTvzaHaHxeGag0GKOs4w';
 
 function displayStartingLocation(query) {
@@ -82,6 +85,10 @@ resultsOfStart.addEventListener('click', function(e) {
     child.className = "";
   }
   rightClick.className = "selected";
+
+  startGeo = [];
+  startGeo.push(rightClick.dataset.lat, rightClick.dataset.long);
+  return startGeo;
 });
 
 resultsOfDestination.addEventListener('click', function(e) {
@@ -90,10 +97,30 @@ resultsOfDestination.addEventListener('click', function(e) {
     child.className = "";
   }
   rightClick.className = "selected";
+
+  destinationGeo = [];
+  destinationGeo.push(rightClick.dataset.lat, rightClick.dataset.long);
+  return destinationGeo;
 });
 
 searchTripButton.addEventListener('click', function(e) {
   if(e.target.className === "plan-trip") {
-    console.log('hi');
+    if(startGeo[0] || startGeo[1] || destinationGeo[0] || destinationGeo[1] !== "") {
+      planTrip(startGeo[0], startGeo[1], destinationGeo[0], destinationGeo[1]);
+    }
   }
 })
+
+function planTrip(startLat, startLong, endLat, endLong) {
+  fetch(`https://api.winnipegtransit.com/v3/trip-planner.json?api-key=${myWinnipegTransitAPI}&origin=geo/${startLat},${startLong}&destination=geo/${endLat},${endLong}`)
+  .then(resp => {
+    if (resp.ok) {
+      return resp.json();
+    } else {
+      throw new Error ('No trips found');
+    }
+  })
+  .then(trip => {
+    console.log(trip);
+  });
+}
