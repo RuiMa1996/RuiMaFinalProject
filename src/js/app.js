@@ -36,4 +36,12 @@ startingLocation.addEventListener('submit', function(e) {
   const input = e.target.querySelector('input');
   displayStartingLocation(input.value);
   input.value = "";
+});
+
+resultsOfStart.addEventListener('click', function(e) {
+  const rightClick = e.target.closest('li');
+  for(let child of resultsOfStart.children) {
+    child.className = "";
+  }
+  rightClick.className = "selected";
 })
