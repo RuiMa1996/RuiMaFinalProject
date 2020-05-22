@@ -2,6 +2,7 @@ const startingLocation = document.querySelector('.origin-form');
 const destination = document.querySelector('.destination-form')
 const resultsOfStart = document.querySelector('.origins');
 const resultsOfDestination = document.querySelector('.destinations');
+const searchTripButton = document.querySelector('.button-container');
 const lockInWinnipeg = '-97.325875, 49.766204, -96.953987, 49.99275';
 mapboxgl.accessToken = 'pk.eyJ1IjoiZHJzbGltcmVhcGVycnVpIiwiYSI6ImNrYTVpazZ6YzAwajYzZ21nNHlmY2VtMDkifQ.6XvTvzaHaHxeGag0GKOs4w';
 
@@ -90,3 +91,9 @@ resultsOfDestination.addEventListener('click', function(e) {
   }
   rightClick.className = "selected";
 });
+
+searchTripButton.addEventListener('click', function(e) {
+  if(e.target.className === "plan-trip") {
+    console.log('hi');
+  }
+})
