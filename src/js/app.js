@@ -120,46 +120,60 @@ function planTrip(startLat, startLong, endLat, endLong) {
       }
     })
     .then(trip => {
-      console.log(trip.plans[0].segments);
+      let tripPlans;
+      tripPlans = trip.plans[0].segments;
+      console.log(tripPlans);
+      createTrip(tripPlans);
     });
 }
 
-function createTrip(arrayOfPlan) {
-  Promise.all(arrayOfPlan).then(result => {
-    listOfPlan(result.type);
-  })
+function createTrip(arrayOfPlans) {
+  tripEle.innerHTML = "";
+  tripEle.innerHTML = listOfPlan(arrayOfPlans);
 }
 
-function listOfPlan(whatToDo) {
-  let html = ""
-  if(whatToDo === "walk") {
-    html += `
-    <li>
-       <i class="fas fa-walking" aria-hidden="true"></i>Walk for ${timeCounter(whatToDo.times.start, whatToDo.times.end)} minutes
-      to stop #${whatToDo.to.stop.key} - ${whatToDo.to.stop.name}
-    </li>
-    `
-  } else if (whatToDo === "ride") {
-    html += `
-    <li>
-      <i class="fas fa-bus" aria-hidden="true"></i>Ride the ${whatToDo.route.name} for ${timeCounter(whatToDo.times.start, whatToDo.times.end)} minutes.
-    </li>
-    `
-  } else if (whatToDo === "transfer") {
-    html += `
-      <li>
-        <i class="fas fa-ticket-alt" aria-hidden="true"></i>Transfer from stop
-        #${whatToDo.from.stop.key} - ${whatToDo.from.stop.name}to stop #${whatToDo.to.stop.key} - ${whatToDo.to.stop.name}
-      </li>
-    `
-  }
+function listOfPlan(plans) {
+  let html = "";
+  
+  plans.forEach(plan => {
+    if (plan.type === "walk") {
+      if(plan.to.stop === undefined) {
+        html += `
+        <li>
+          <i class="fas fa-walking" aria-hidden="true"></i>Walk for ${timeCounter(plan.times.start, plan.times.end)} minutes to
+          your destination.
+        </li>
+        `
+      } else {
+        html += `
+        <li>
+           <i class="fas fa-walking" aria-hidden="true"></i>Walk for ${timeCounter(plan.times.start, plan.times.end)} minutes
+          to stop #${plan.to.stop.key} - ${plan.to.stop.name}
+        </li>
+        `
+      }
+    } else if (plan.type === "ride") {
+      html += `
+        <li>
+          <i class="fas fa-bus" aria-hidden="true"></i>Ride the ${plan.route.name} for ${timeCounter(plan.times.start, plan.times.end)} minutes.
+        </li>
+        `
+    } else if (plan.type === "transfer") {
+      html += `
+          <li>
+            <i class="fas fa-ticket-alt" aria-hidden="true"></i>Transfer from stop
+            #${plan.from.stop.key} - ${plan.from.stop.name}to stop #${plan.to.stop.key} - ${plan.to.stop.name}
+          </li>
+        `
+    }
+  });
 
   return html;
 }
 
 function timeCounter(start, end) {
-  let timeStart = new Date(start).getMinutes;
-  let timeEnd = new Date(end).getMinutes;
+  let timeStart = new Date(start);
+  let timeEnd = new Date(end);
 
-  return timeEnd - timeStart;
+  return timeEnd.getMinutes() - timeStart.getMinutes();
 }
