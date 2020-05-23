@@ -106,7 +106,9 @@ resultsOfDestination.addEventListener('click', function (e) {
 
 searchTripButton.addEventListener('click', function (e) {
   if (e.target.className === "plan-trip") {
-    planTrip(startGeo[0], startGeo[1], destinationGeo[0], destinationGeo[1]);
+    if(startGeo[0] && startGeo[1] && destinationGeo[0] && destinationGeo[1] != "") {
+      planTrip(startGeo[0], startGeo[1], destinationGeo[0], destinationGeo[1]);
+    }
   }
 })
 
