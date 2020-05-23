@@ -122,7 +122,6 @@ function planTrip(startLat, startLong, endLat, endLong) {
     .then(trip => {
       let tripPlans;
       tripPlans = trip.plans[0].segments;
-      console.log(tripPlans);
       createTrip(tripPlans);
     });
 }
@@ -153,11 +152,19 @@ function listOfPlan(plans) {
         `
       }
     } else if (plan.type === "ride") {
-      html += `
+      if(plan.route.name === undefined) {
+        html += `
+        <li>
+          <i class="fas fa-bus" aria-hidden="true"></i>Ride the ${plan.variant.name} for ${timeCounter(plan.times.start, plan.times.end)} minutes.
+        </li>
+        `
+      } else {
+        html += `
         <li>
           <i class="fas fa-bus" aria-hidden="true"></i>Ride the ${plan.route.name} for ${timeCounter(plan.times.start, plan.times.end)} minutes.
         </li>
         `
+      }
     } else if (plan.type === "transfer") {
       html += `
           <li>
